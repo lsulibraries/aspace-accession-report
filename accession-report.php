@@ -46,7 +46,20 @@ catch(Exception $e) {
 
     .search {
 
-     }
+    }
+    div.found {
+
+    }
+  </style>
+  <style media="print">
+
+    a:link {
+        text-decoration: none;
+    }
+        
+    .search, .found {
+      display: none;
+    }
   </style>
 </head>
 <body>
