@@ -75,14 +75,15 @@ catch(Exception $e) {
   <div>No records found</div>
   <?php else :  ?>
     <?php if (count($records) > 1): ?>
-      <div>Found <?php echo count($records); ?> records for search string '<?php echo $search;?>'</div>
-      <?php foreach ($records as $record): ?>
-      <div><span><a href="#<?php echo $record['Mss Number'];?>"><?php echo $record['Mss Number'];?></a></span></div>
-      <?php endforeach;?>
+      <div class="found"><span>Found <?php echo count($records); ?> records for search string '<?php echo $search;?>'</span>
+        <?php foreach ($records as $record): ?>
+        <div><span><a href="#<?php echo $record['Mss Number'];?>"><?php echo $record['Mss Number'];?></a></span></div>
+        <?php endforeach;?>
+      </div>
     <?php endif; ?>
 
     <?php foreach ($records as $record): ?>
-    <h1 id="<?php echo $record['Mss Number'];?>"><a href="<?php echo '/accession-report.php?mss=' . $record['Mss Number'];?>">Mss <?php echo $record['Mss Number'];?></a></h1>
+    <h1 id="<?php echo $record['Mss Number'];?>"><a href="<?php echo '/accession-report.php?mss=' . $record['Mss Number'];?>"><?php echo $record['Mss Number'];?></a></h1>
     <?php foreach ($record as $field => $value): ?>
       <div class="field">
         <span class="field-name <?php echo $field; ?>"><?php echo $field; ?></span>
