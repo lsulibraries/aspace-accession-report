@@ -10,7 +10,9 @@ try {
 
   if (!empty($_POST)) {
     $search = trim_query_param($_POST['idsearch']);
-    $records = search_records($search);
+    if (strlen($search) > 0) {
+      $records = search_records($search);
+    }
   }
   elseif (!empty($_GET['mss'])) {
     $search = trim_query_param($_GET['mss']);
