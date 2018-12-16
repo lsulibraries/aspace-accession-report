@@ -59,42 +59,52 @@ function get_query($where_clause) {
     $query = <<<EOQ
 
 select
-         ud.string_1 "Mss Number",
-         acc.title Title,
+         acc.title "Collection Title",
+         ud.string_2 "Location",
+         d.`expression` "Collection Dates",
+         (select value from enumeration_value where id=d.date_type_id) "Date Type",
+         (select value from enumeration_value where id=d.label_id) "Date Label ID", 
+
+         bulk.`expression` "Bulk Dates",
+         (select value from enumeration_value where id=bulk.date_type_id) "Bulk date type",
+         (select value from enumeration_value where id=bulk.label_id) "Bulk dat Label ID", 
+
+         CONCAT(e.number, ' ', (select value from enumeration_value where id = e.extent_type_id)) Extent,
+         ud.date_1 "Date Received",
+         ( SELECT value FROM enumeration_value where id = acc.acquisition_type_id) "Acquisition Type",
+         acc.restrictions_apply "Restrictions Apply",
+         acc.access_restrictions "Access Restrictions",
+         acc.access_restrictions_note "Access Note",
+         acc.use_restrictions "Use Restrictions",
+         acc.use_restrictions_note "Use Note",
          acc.content_description "Content Description",
          acc.general_note "General Note",
-         acc.access_restrictions_note "Access Restrictions Note",
-         acc.use_restrictions_note "Use Restrictions Note",
-         acc.accession_date "Accession Date",
-         ( SELECT value FROM enumeration_value where id = acc.acquisition_type_id) "Acquisition Type",
-         ( SELECT value FROM enumeration_value where id = acc.resource_type_id) "Resource Type",
-         acc.restrictions_apply "Restrictions Apply",
-         acc.publish "Publish",
-         acc.access_restrictions "Access Restrictions",
-         acc.use_restrictions "Use Restrictions",
-         ud.string_2 "Location",
-         ud.string_3 "SIRSI Number",
-         ud.date_1 "Date Received",
-         ud.real_1 "Price",
-         e.number Number,
-         (select value from enumeration_value where id = e.extent_type_id) Type,
-         (select value from enumeration_value where id = e.portion_id)  Portion,
+         ud.string_1 "Mss Number",
          people.sort_name Name,
          people.address_1 Address,
          people.city City,
          people.region Region,
          people.post_code 'Post Code',
+         acc.accession_date "Accession Date",
+         ud.real_1 "Price",
+         concat('https://aspace.lib.lsu.edu/accessions/', acc.id) "ArchivesSpace URL"
+
+
+
+/*
+         ( SELECT value FROM enumeration_value where id = acc.resource_type_id) "Resource Type",
+         acc.publish "Publish",
+         ud.string_3 "SIRSI Number",
+         e.number Number,
+         (select value from enumeration_value where id = e.extent_type_id) Type,
+         (select value from enumeration_value where id = e.portion_id)  Portion,
          people.role Role,
          d.`begin` "Begin date",
          d.`end` "End date", 
-         (select value from enumeration_value where id=d.date_type_id) "Date Type",
-         (select value from enumeration_value where id=d.label_id) "Label ID", 
-         d.`expression` "Date expression",
+
          bulk.`begin` "Bulk begin",
          bulk.`end` "Bulk end", 
-         (select value from enumeration_value where id=bulk.date_type_id) "Bulk date type",
-         (select value from enumeration_value where id=bulk.label_id) "Label ID", 
-         bulk.`expression` "Bulk expression",
+
          acc.repo_id "Aspace repo id",
          acc.id "Aspace accession id",
          acc.identifier "Aspace Identifier",
@@ -103,6 +113,9 @@ select
          SUBSTRING_INDEX(SUBSTRING_INDEX(acc.identifier, '"', 4), '"', -1) AS id2,
            IF(@num_elements > 4, SUBSTRING_INDEX(SUBSTRING_INDEX(acc.identifier, '"', 6), '"', -1), '') AS id3,
            IF(@num_elements > 6, SUBSTRING_INDEX(SUBSTRING_INDEX(acc.identifier, '"', 8), '"', -1), '') AS id4
+
+*/
+
 from 
    accession acc inner join user_defined ud on ud.accession_id = acc.id
    join extent e on e.accession_id = acc.id
