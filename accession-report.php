@@ -34,6 +34,8 @@ catch(Exception $e) {
     body {
         background-color: powderblue;
         padding-left: 3em;
+        padding-right: 3em;
+        font-family: sans-serif;
     }
     h1   {color: blue;}
     span.field-name    {
@@ -50,8 +52,31 @@ catch(Exception $e) {
     div.found {
 
     }
+
+    dl {
+      display: grid;
+      grid-template-columns: 1fr 2fr;
+    }
+
+    dt {
+      grid-column-start: 1;
+      padding: 4px;
+      font-variant: small-caps;
+    }
+
+    dd {
+      grid-column-start: 2;
+      padding: 4px;
+    }
+
   </style>
   <style media="print">
+    body: {
+        font-family: Georgia, serif;
+        font-size: 10pt;
+        padding-top: 1em;
+        padding-bottom: 1em;
+    }
 
     a:link {
         text-decoration: none;
@@ -64,10 +89,9 @@ catch(Exception $e) {
 </head>
 <body>
   <div class="search">
-    <h2>Search</h2>
-    <div>Enter a string to search for accession records. Examples are "44", "4444", "4444-2002".</div>
     <form method="post" action="/accession-report.php">
-      <input name="idsearch" type="text" />
+      <label for="idsearch">Search</label>
+      <input name="idsearch" type="text" placeholder='Ex: "44", "4444", "4444-2002"'/>
     </form>
   </div>
   <div class="error"><?php echo $error;?></div>
@@ -84,12 +108,12 @@ catch(Exception $e) {
 
     <?php foreach ($records as $record): ?>
     <h1 id="<?php echo $record['Mss Number'];?>"><a href="<?php echo '/accession-report.php?mss=' . $record['Mss Number'];?>"><?php echo $record['Mss Number'];?></a></h1>
+    <dl>
     <?php foreach ($record as $field => $value): ?>
-      <div class="field">
-        <span class="field-name <?php echo $field; ?>"><?php echo $field; ?></span>
-        <span class="field-value"><?php echo $value; ?></span>
-      </div>
+      <dt class="field-name <?php echo $field; ?>"><?php echo $field; ?></dt>
+<dd class="field-value"><?php echo strlen($value) > 0 ? $value : '-'; ?></dd>
       <?php endforeach ?>
+    </dl>
     <?php endforeach ?>
   <?php endif; ?>
 </body>
