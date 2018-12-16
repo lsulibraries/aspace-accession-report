@@ -1,15 +1,23 @@
 <?php
 
+function search_records($search) {
+  validate_query_param($search);
+  $pdo = get_connection();
+  $query = $pdo->prepare(get_query('and ud.string_1 LIKE ?'));
+  $query->execute(["%$search%"]);
+  return $query->fetchAll();
+}
 
-function get_report() {
 
-  $id = $_GET['mss'];
-  foreach (explode('-', $id) as $chunk) { 
-    if (!ctype_digit($chunk)) {
-      throw new Exception("expected alpha-numeric, optionally hyphen-delimited, argument to mss, got $id");
-    }
-  }
+function get_record($id) {
+  validate_query_param($id);
+  $pdo = get_connection();
+  $query = $pdo->prepare(get_query('and ud.string_1 = ?'));
+  $query->execute([$id]);
+  return $query->fetchAll();
+}
 
+function get_connection() {
   $config = parse_ini_file('config.ini');
   $host = '127.0.0.1';
   $db   = 'archivesspace';
@@ -28,17 +36,18 @@ function get_report() {
   } catch (\PDOException $e) {
       throw new \PDOException($e->getMessage(), (int)$e->getCode());
   }
-  $stmt = $pdo->prepare(get_query());
-
-  // LIKE param
-  $likeId = "%$id%";
-  $stmt->execute([$likeId]);
-  $accession = $stmt->fetchAll();
-
-  return $accession;
+  return $pdo;
 }
 
-function get_query() {
+function validate_query_param($query_param) {
+  foreach (explode('-', $query_param) as $chunk) { 
+    if (!ctype_alnum($chunk)) {
+      throw new Exception("expected alpha-numeric (optionally hyphen-delimited) argument, got '$id'.  ");
+    }
+  }
+}
+
+function get_query($where_clause) {
     
     $query = <<<EOQ
 
@@ -116,8 +125,9 @@ from
       ON people.accession_id = acc.id
 where ((select value from enumeration_value where id=d.date_type_id) = "inclusive"
     or (select value from enumeration_value where id=d.date_type_id) = "single")
-    and ud.string_1 LIKE ?
+    $where_clause
 
+ORDER BY ud.string_1
 
 EOQ;
 
