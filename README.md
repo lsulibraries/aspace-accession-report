@@ -20,7 +20,7 @@ A value entered in the 'Search' form is used to query the Aspace db for a matchi
 The search string needs to be alpha-numeric, and can include a hyphen.
 
 When multiple db rows match, they are all returned, and a list of ordered Mss numbers at the top of the page links to the full record elsewhere in the page.
-Each record starts with the Mss in <h1>, and clicking this links to a display of just that record (provided the Mss is unique).
+Each record starts with the Mss in an h1 tag, and clicking this links to a display of just that record (provided the Mss is unique).
 
 Printing is supported with print CSS that removes the search box and link list.
 
