@@ -1,7 +1,7 @@
 <?php
 
 function search_records($search) {
-  validate_query_param($search);
+  $search = validate_query_param($search);
   $pdo = get_connection();
   $query = $pdo->prepare(get_query('and ud.string_1 LIKE ?'));
   $query->execute(["%$search%"]);
@@ -10,7 +10,7 @@ function search_records($search) {
 
 
 function get_record($id) {
-  validate_query_param($id);
+  $id = validate_query_param($id);
   $pdo = get_connection();
   $query = $pdo->prepare(get_query('and ud.string_1 = ?'));
   $query->execute([$id]);
@@ -39,12 +39,19 @@ function get_connection() {
   return $pdo;
 }
 
+function trim_query_param($query_param) {
+    $parts = explode('-', $query_param);
+    $trimmed = array_map('trim', $parts);
+    return implode('-', $trimmed);
+}
+
 function validate_query_param($query_param) {
   foreach (explode('-', $query_param) as $chunk) { 
     if (!ctype_alnum($chunk)) {
-      throw new Exception("expected alpha-numeric (optionally hyphen-delimited) argument, got '$id'.  ");
+      throw new Exception("expected alpha-numeric (optionally hyphen-delimited) argument, got '$query_param'.  ");
     }
   }
+  return $query_param;
 }
 
 function get_query($where_clause) {
@@ -52,15 +59,8 @@ function get_query($where_clause) {
     $query = <<<EOQ
 
 select
-         @num_elements := LENGTH(acc.identifier) - LENGTH(REPLACE(acc.identifier, '"', '')) AS num_elements,        
-         SUBSTRING_INDEX(SUBSTRING_INDEX(acc.identifier, '"', 2), '"', -1) AS id1,
-         SUBSTRING_INDEX(SUBSTRING_INDEX(acc.identifier, '"', 4), '"', -1) AS id2,
-           IF(@num_elements > 4, SUBSTRING_INDEX(SUBSTRING_INDEX(acc.identifier, '"', 6), '"', -1), '') AS id3,
-           IF(@num_elements > 6, SUBSTRING_INDEX(SUBSTRING_INDEX(acc.identifier, '"', 8), '"', -1), '') AS id4,
-         acc.id,
+         ud.string_1 "Mss Number",
          acc.title Title,
-         acc.repo_id,
-         acc.identifier,
          acc.content_description "Content Description",
          acc.general_note "General Note",
          acc.access_restrictions_note "Access Restrictions Note",
@@ -72,7 +72,6 @@ select
          acc.publish "Publish",
          acc.access_restrictions "Access Restrictions",
          acc.use_restrictions "Use Restrictions",
-         ud.string_1 "Mss Number",
          ud.string_2 "Location",
          ud.string_3 "SIRSI Number",
          ud.date_1 "Date Received",
@@ -86,16 +85,24 @@ select
          people.region Region,
          people.post_code 'Post Code',
          people.role Role,
-         d.`begin`,
-         d.`end`, 
+         d.`begin` "Begin date",
+         d.`end` "End date", 
          (select value from enumeration_value where id=d.date_type_id) "Date Type",
          (select value from enumeration_value where id=d.label_id) "Label ID", 
-         d.`expression`,
+         d.`expression` "Date expression",
          bulk.`begin` "Bulk begin",
          bulk.`end` "Bulk end", 
          (select value from enumeration_value where id=bulk.date_type_id) "Bulk date type",
          (select value from enumeration_value where id=bulk.label_id) "Label ID", 
-         bulk.`expression` "Bulk expression"
+         bulk.`expression` "Bulk expression",
+         acc.repo_id "Aspace repo id",
+         acc.id "Aspace accession id",
+         acc.identifier "Aspace Identifier",
+         @num_elements := LENGTH(acc.identifier) - LENGTH(REPLACE(acc.identifier, '"', '')) AS num_elements,        
+         SUBSTRING_INDEX(SUBSTRING_INDEX(acc.identifier, '"', 2), '"', -1) AS id1,
+         SUBSTRING_INDEX(SUBSTRING_INDEX(acc.identifier, '"', 4), '"', -1) AS id2,
+           IF(@num_elements > 4, SUBSTRING_INDEX(SUBSTRING_INDEX(acc.identifier, '"', 6), '"', -1), '') AS id3,
+           IF(@num_elements > 6, SUBSTRING_INDEX(SUBSTRING_INDEX(acc.identifier, '"', 8), '"', -1), '') AS id4
 from 
    accession acc inner join user_defined ud on ud.accession_id = acc.id
    join extent e on e.accession_id = acc.id

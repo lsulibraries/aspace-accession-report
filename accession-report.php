@@ -9,11 +9,11 @@ $fresh = FALSE;
 try {
 
   if (!empty($_POST)) {
-    $search = $_POST['idsearch'];
+    $search = trim_query_param($_POST['idsearch']);
     $records = search_records($search);
   }
   elseif (!empty($_GET['mss'])) {
-    $search = $_GET['mss'];
+    $search = trim_query_param($_GET['mss']);
     $records = get_record($search);
   }
   else {
@@ -21,7 +21,7 @@ try {
   }
 }
 catch(Exception $e) {
-  $error = $e;
+    $error = "<strong>There was a problem with your search; see the following message for more information:</strong><br /> $e";
 }
 ?>
 
@@ -29,19 +29,32 @@ catch(Exception $e) {
 
 <head>
 <style>
-    body {background-color: powderblue;}
+    body {
+        background-color: powderblue;
+        padding-left: 3em;
+    }
     h1   {color: blue;}
-    span.field-name    {font-weight: bold;}
-    span.field-value {padding-left: 4em;}
+    span.field-name    {
+        font-weight: bold;
+        width: 160px;
+    }
+    span.field-value {
+        padding-left: 4em;
+    }
+
+    .search {
+
+     }
   </style>
 </head>
 <body>
-  <h2>Search</h2>
-  <div>Enter a string to search for accession records. Examples are "44", "4444", "4444-2002".</div>
-  <form method="post">
-    <input name="idsearch" type="text" />
-  </form>
-
+  <div class="search">
+    <h2>Search</h2>
+    <div>Enter a string to search for accession records. Examples are "44", "4444", "4444-2002".</div>
+    <form method="post" action="/accession-report.php">
+      <input name="idsearch" type="text" />
+    </form>
+  </div>
   <div class="error"><?php echo $error;?></div>
   <?php if (count($records) == 0 && !$fresh): ?>
   <div>No records found</div>
