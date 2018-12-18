@@ -3,8 +3,8 @@
 function search_records($search) {
   $search = validate_query_param($search);
   $pdo = get_connection();
-  $query = $pdo->prepare(get_query('and ud.string_1 LIKE ?'));
-  $query->execute(["%$search%"]);
+  $query = $pdo->prepare(get_query('ud.string_1 LIKE ?'));
+  $query->execute(["%$search%", "%$search%"]);
   return $query->fetchAll();
 }
 
@@ -12,8 +12,8 @@ function search_records($search) {
 function get_record($id) {
   $id = validate_query_param($id);
   $pdo = get_connection();
-  $query = $pdo->prepare(get_query('and ud.string_1 = ?'));
-  $query->execute([$id]);
+  $query = $pdo->prepare(get_query('ud.string_1 = ?'));
+  $query->execute([$id, $id]);
   return $query->fetchAll();
 }
 
@@ -47,9 +47,9 @@ function trim_query_param($query_param) {
 
 function validate_query_param($query_param) {
   foreach (explode('-', $query_param) as $chunk) {
-    if (!ctype_alnum($chunk)) {
-      throw new Exception("expected alpha-numeric (optionally hyphen-delimited) argument, got '$query_param'.  ");
-    }
+    // if (!ctype_alnum($chunk)) {
+    //   throw new Exception("expected alpha-numeric (optionally hyphen-delimited) argument, got '$query_param'.  ");
+    // }
   }
   return $query_param;
 }
@@ -59,7 +59,7 @@ function get_query($where_clause) {
     $query = <<<EOQ
 
 select
-         acc.identifier "Aspace Identifier",
+         concat(SUBSTRING_INDEX(SUBSTRING_INDEX(acc.identifier, '"', 2), '"', -1)," ", SUBSTRING_INDEX(SUBSTRING_INDEX(acc.identifier, '"', 4), '"', -1)) as "Accession Identifier",
          acc.title "Collection Title",
          ud.string_2 "Location",
          d.`expression` "Collection Dates",
@@ -89,6 +89,7 @@ select
 
 /*
          ( SELECT value FROM enumeration_value where id = acc.resource_type_id) "Resource Type",
+         acc.identifier "Aspace Identifier",
          acc.publish "Publish",
          ud.string_3 "SIRSI Number",
          e.number Number,
@@ -147,7 +148,12 @@ from
       ON people.accession_id = acc.id
 where ((select value from enumeration_value where id=d.date_type_id) = "inclusive"
     or (select value from enumeration_value where id=d.date_type_id) = "single")
+    and
+    (
+      concat(SUBSTRING_INDEX(SUBSTRING_INDEX(acc.identifier, '"', 2), '"', -1)," ", SUBSTRING_INDEX(SUBSTRING_INDEX(acc.identifier, '"', 4), '"', -1)) like ?
+    OR
     $where_clause
+    )
 
 ORDER BY ud.string_1
 
