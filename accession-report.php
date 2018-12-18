@@ -1,6 +1,6 @@
 <?php
 
-require_once('report.php');
+require_once 'report.php';
 
 $records = [];
 $error = NULL;
@@ -23,7 +23,7 @@ try {
   }
 }
 catch(Exception $e) {
-    $error = "<strong>There was a problem with your search; see the following message for more information:</strong><br /> $e";
+  $error = "<strong>There was a problem with your search; see the following message for more information:</strong><br /> $e";
 }
 ?>
 
@@ -101,7 +101,7 @@ catch(Exception $e) {
     <?php if (count($records) > 1): ?>
       <div class="found"><span>Found <?php echo count($records); ?> records for search string '<?php echo $search;?>'</span>
         <?php foreach ($records as $record): ?>
-        <div><span><a href="#<?php echo $record['Mss Number'];?>"><?php echo $record['Mss Number'];?></a></span></div>
+        <div><a href="#<?php echo $record['Mss Number']?>"><span><?php echo $record['Mss Number'] . ' -- ' . $record['Accession Identifier']; ;?></span></a></div>
         <?php endforeach;?>
       </div>
     <?php endif; ?>

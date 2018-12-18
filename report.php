@@ -1,7 +1,8 @@
 <?php
 
 function search_records($search) {
-  $search = validate_query_param($search);
+  // $search = validate_query_param($search);
+
   $pdo = get_connection();
   $query = $pdo->prepare(get_query('ud.string_1 LIKE ?'));
   $query->execute(["%$search%", "%$search%"]);
@@ -10,7 +11,7 @@ function search_records($search) {
 
 
 function get_record($id) {
-  $id = validate_query_param($id);
+  // $id = validate_query_param($id);
   $pdo = get_connection();
   $query = $pdo->prepare(get_query('ud.string_1 = ?'));
   $query->execute([$id, $id]);
