@@ -1,8 +1,6 @@
 <?php
 
 function search_records($search) {
-  // $search = validate_query_param($search);
-
   $pdo = get_connection();
   $query = $pdo->prepare(get_query('ud.string_1 LIKE ?'));
   if (FALSE == $query) {
@@ -15,7 +13,6 @@ function search_records($search) {
 
 
 function get_record($id) {
-  // $id = validate_query_param($id);
   $pdo = get_connection();
   $query = $pdo->prepare(get_query('ud.string_1 = ?'));
   $query->execute([$id, $id]);
@@ -60,15 +57,6 @@ function trim_query_param($query_param) {
     $parts = explode('-', $query_param);
     $trimmed = array_map('trim', $parts);
     return implode('-', $trimmed);
-}
-
-function validate_query_param($query_param) {
-  foreach (explode('-', $query_param) as $chunk) {
-    // if (!ctype_alnum($chunk)) {
-    //   throw new Exception("expected alpha-numeric (optionally hyphen-delimited) argument, got '$query_param'.  ");
-    // }
-  }
-  return $query_param;
 }
 
 function get_query($where_clause) {
