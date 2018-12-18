@@ -8,7 +8,7 @@ function search_records($search) {
   }
   $query->execute(["%$search%", "%$search%"]);
   $results = $query->fetchAll();
-  return interpolateBools($results);
+  return truncateFields(interpolateBools($results));
 }
 
 
@@ -17,7 +17,7 @@ function get_record($id) {
   $query = $pdo->prepare(get_query('ud.string_1 = ?'));
   $query->execute([$id, $id]);
   $results = $query->fetchAll();
-  return interpolateBools($results);
+  return truncateFields(interpolateBools($results));
 }
 
 
@@ -26,6 +26,16 @@ function interpolateBools($results) {
   foreach ($results as $id => $row) {
     foreach ($boolean_fields as $field) {
       $results[$id][$field] = $results[$id][$field] == 0 ? 'False' : 'True';
+    }
+  }
+  return $results;
+}
+
+function truncateFields($results) {
+  $long_fields = ['General Note', 'Content Description'];
+  foreach ($results as $id => $row) {
+    foreach ($long_fields as $field) {
+      $results[$id][$field] = substr($results[$id][$field], 0, 512);
     }
   }
   return $results;
