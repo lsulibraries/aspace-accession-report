@@ -55,7 +55,7 @@ catch(Exception $e) {
 
     dl {
       display: grid;
-      grid-template-columns: 1fr 2fr;
+      /* grid-template-columns: 1fr 2fr; */
     }
 
     dt {
@@ -81,7 +81,7 @@ catch(Exception $e) {
     a:link {
         text-decoration: none;
     }
-        
+
     .search, .found {
       display: none;
     }
@@ -117,6 +117,3 @@ catch(Exception $e) {
     <?php endforeach ?>
   <?php endif; ?>
 </body>
-
-
-
