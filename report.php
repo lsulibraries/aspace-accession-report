@@ -5,8 +5,12 @@ function search_records($search) {
 
   $pdo = get_connection();
   $query = $pdo->prepare(get_query('ud.string_1 LIKE ?'));
+  if (FALSE == $query) {
+    throw new InvalidArgumentException($search);
+  }
   $query->execute(["%$search%", "%$search%"]);
-  return $query->fetchAll();
+  $results = $query->fetchAll();
+  return interpolateBools($results);
 }
 
 
@@ -15,7 +19,19 @@ function get_record($id) {
   $pdo = get_connection();
   $query = $pdo->prepare(get_query('ud.string_1 = ?'));
   $query->execute([$id, $id]);
-  return $query->fetchAll();
+  $results = $query->fetchAll();
+  return interpolateBools($results);
+}
+
+
+function interpolateBools($results) {
+  $boolean_fields = ['Restrictions Apply', 'Access Restrictions', 'Use Restrictions'];
+  foreach ($results as $id => $row) {
+    foreach ($boolean_fields as $field) {
+      $results[$id][$field] = $results[$id][$field] == 0 ? 'False' : 'True';
+    }
+  }
+  return $results;
 }
 
 function get_connection() {
