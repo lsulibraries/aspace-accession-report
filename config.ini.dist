@@ -1,2 +1,4 @@
 pass=password
 user=dbusername
+host='my.aspace.host'
+db_name='my_aspace_db'

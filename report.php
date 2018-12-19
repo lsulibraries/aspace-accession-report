@@ -43,8 +43,8 @@ function truncateFields($results) {
 
 function get_connection() {
   $config = parse_ini_file('config.ini');
-  $host = '127.0.0.1';
-  $db   = 'archivesspace';
+  $host = $config['host'];
+  $db   = $config['db_name'];
   $user = $config['user'];
   $pass = $config['pass'];
   $charset = 'utf8mb4';
