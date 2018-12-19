@@ -33,9 +33,19 @@ function interpolateBools($results) {
 
 function truncateFields($results) {
   $long_fields = ['General Note', 'Content Description'];
+  $word_quota = 64;
   foreach ($results as $id => $row) {
     foreach ($long_fields as $field) {
-      $results[$id][$field] = substr($results[$id][$field], 0, 512);
+      $words = explode(' ', $results[$id][$field]);
+      if (count($words) > $word_quota) {
+        $display_words = array_slice($words, 0, $word_quota);
+        array_push($display_words, '... [TRUNCATED]');
+      }
+      else {
+        $display_words = $words;
+      }
+
+      $results[$id][$field] = implode(' ', $display_words);
     }
   }
   return $results;
