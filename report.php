@@ -1,6 +1,7 @@
 <?php
 
 function search_records($search) {
+  $search = clean_search_string($search);
   $pdo = get_connection();
   $query = $pdo->prepare(get_query('ud.string_1 LIKE ?'));
   if (FALSE == $query) {
@@ -13,6 +14,7 @@ function search_records($search) {
 
 
 function get_record($id) {
+  $id = clean_search_string($id);
   $pdo = get_connection();
   $query = $pdo->prepare(get_query('ud.string_1 = ?'));
   $query->execute([$id, $id]);
@@ -20,6 +22,12 @@ function get_record($id) {
   return truncateFields(interpolateBools($results));
 }
 
+function clean_search_string($search) {
+  if (FALSE !== stripos($search, 'acc')) {
+    $search = str_ireplace('-', ' ', str_ireplace('acc', '', $search));
+  }
+  return $search;
+}
 
 function interpolateBools($results) {
   $boolean_fields = ['Restrictions Apply', 'Access Restrictions', 'Use Restrictions'];
