@@ -3,7 +3,8 @@
 function search_records($search) {
   $search = clean_search_string($search);
   $pdo = get_connection();
-  $query = $pdo->prepare(get_query('ud.string_1 LIKE ?'));
+  $where = get_where();
+  $query = $pdo->prepare(get_query($where));
   if (FALSE == $query) {
     throw new InvalidArgumentException($search);
   }
@@ -12,12 +13,34 @@ function search_records($search) {
   return truncateFields(interpolateBools($results));
 }
 
+function get_where($like = TRUE, $field = NULL) {
+  if (!in_array($field, ['acc', 'mss', NULL])) {
+    throw IllegalArgumentException("Illegal value [] specified for 'field'");
+  }
+  $operator = $like ? 'LIKE' : "=";
+  $acc_clause = sprintf(<<<EOC
+  concat(SUBSTRING_INDEX(SUBSTRING_INDEX(acc.identifier, '"', 2), '"', -1)," ", SUBSTRING_INDEX(SUBSTRING_INDEX(acc.identifier, '"', 4), '"', -1)) %s ?
+EOC
+  , $operator);
+  $mss_clause = sprintf("ud.string_1 %s ?", $operator);
+
+  if ($field == 'acc') {
+    return sprintf($acc_clause, $operator);
+  }
+  elseif ($field == 'mss') {
+    return sprintf($mss_clause, $operator);
+  }
+  else {
+    return sprintf("%s OR %s", $mss_clause, $acc_clause);
+  }
+}
 
 function get_record($id) {
-  $id = clean_search_string($id);
+  // $id = clean_search_string($id);
   $pdo = get_connection();
-  $query = $pdo->prepare(get_query('ud.string_1 = ?'));
-  $query->execute([$id, $id]);
+  $where = get_where(FALSE, 'acc');
+  $query = $pdo->prepare(get_query($where));
+  $query->execute([$id]);
   $results = $query->fetchAll();
   return truncateFields(interpolateBools($results));
 }
@@ -161,14 +184,7 @@ function get_query($where_clause) {
          left join agent_contact ac on ac.agent_person_id = l.agent_person_id
        where l.role_id = 880) creators ON creators.id = acc.id
 
-where (
-
-    (
-      concat(SUBSTRING_INDEX(SUBSTRING_INDEX(acc.identifier, '"', 2), '"', -1)," ", SUBSTRING_INDEX(SUBSTRING_INDEX(acc.identifier, '"', 4), '"', -1)) like ?
-    OR
-    $where_clause
-    )
-    )
+where $where_clause
 
 ORDER BY ud.string_1
 
