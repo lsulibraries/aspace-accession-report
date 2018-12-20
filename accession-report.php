@@ -14,8 +14,8 @@ try {
       $records = search_records($search);
     }
   }
-  elseif (!empty($_GET['mss'])) {
-    $search = trim_query_param($_GET['mss']);
+  elseif (!empty($_GET['accession'])) {
+    $search = trim_query_param($_GET['accession']);
     $records = get_record($search);
   }
   else {
@@ -97,17 +97,17 @@ catch(Exception $e) {
   <div class="error"><?php echo $error;?></div>
   <?php if (count($records) == 0 && !$fresh): ?>
   <div>No records found</div>
-  <?php else :  ?>
+  <?php else:  ?>
     <?php if (count($records) > 1): ?>
       <div class="found"><span>Found <?php echo count($records); ?> records for search string '<?php echo $search;?>'</span>
         <?php foreach ($records as $record): ?>
-        <div><a href="#<?php echo $record['Mss Number']?>"><span><?php echo $record['Mss Number'] . ' -- ' . $record['Accession Identifier']; ;?></span></a></div>
+        <div><a href="<?php echo '/accession-report.php?accession=' . $record['Accession Identifier'];?>">Mss. <?php echo $record['Mss Number'];?> | Acc ID: <?php echo $record['Accession Identifier'];?></a></div>
         <?php endforeach;?>
       </div>
     <?php endif; ?>
 
     <?php foreach ($records as $record): ?>
-    <h1 id="<?php echo $record['Mss Number'];?>"><a href="<?php echo '/accession-report.php?mss=' . $record['Mss Number'];?>"><?php echo $record['Mss Number'];?></a></h1>
+    <h1 id="<?php echo $record['Accession Identifier'];?>"><a href="<?php echo '/accession-report.php?accession=' . $record['Accession Identifier'];?>">Mss. <?php echo $record['Mss Number'];?> | Acc ID: <?php echo $record['Accession Identifier'];?></a></h1>
     <dl>
     <?php foreach ($record as $field => $value): ?>
       <dt class="field-name <?php echo $field; ?>"><?php echo $field; ?></dt>
