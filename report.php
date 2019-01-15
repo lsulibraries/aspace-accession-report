@@ -118,7 +118,17 @@ function get_query($where_clause) {
              concat(SUBSTRING_INDEX(SUBSTRING_INDEX(acc.identifier, '"', 2), '"', -1)," ", SUBSTRING_INDEX(SUBSTRING_INDEX(acc.identifier, '"', 4), '"', -1)) as "Accession Identifier",
              acc.title "Collection Title",
              ud.string_2 "Location",
-             (select `expression` from date where accession_id = acc.id LIMIT 1) "Collection Dates",
+             (
+               select 
+                 -- `expression` 
+                 CASE
+                   when `expression` IS NULL then CONCAT(begin, ' - ', end)
+                   else `expression`
+                 END
+               from date 
+               where accession_id = acc.id 
+               LIMIT 1
+             ) "Collection Dates",
 
 
 
@@ -141,11 +151,11 @@ function get_query($where_clause) {
              acc.content_description "Content Description",
              acc.general_note "General Note",
              ud.string_1 "Mss Number",
-             creators.Name Creator,
-             creators.Address,
-             creators.City,
-             creators.Region,
-             creators.post_code 'Post Code',
+             sources.Name Source,
+             sources.Address,
+             sources.City,
+             sources.Region,
+             sources.post_code 'Post Code',
              ud.real_1 "Price",
              concat('https://aspace.lib.lsu.edu/accessions/', acc.id) "ArchivesSpace URL"
 
@@ -182,7 +192,7 @@ function get_query($where_clause) {
          join linked_agents_rlshp l on a.id = l.accession_id
          join name_person n on n.agent_person_id = l.agent_person_id
          left join agent_contact ac on ac.agent_person_id = l.agent_person_id
-       where l.role_id = 880) creators ON creators.id = acc.id
+       where l.role_id = 881) sources ON sources.id = acc.id
 
 where $where_clause
 
