@@ -132,14 +132,17 @@ function get_query($where_clause) {
              ) "Collection Dates",
 
 
+             (
+               GROUP_CONCAT(
+               CONCAT_WS(' ',
+                 CONCAT('(', (SELECT value from enumeration_value ev where ev.id = e.portion_id),')'),
+           	     CONCAT(number, ' ', (SELECT value from enumeration_value ev where ev.id = e.extent_type_id)),
+           	     CONCAT('[', CONCAT('Container Summary: ', container_summary), ']')
+               )
+               ORDER BY e.id
+               SEPARATOR ',      ')
+             ) 'Extent(s)',
 
-             -- some accessions have multiple extents, so the following line is replaced by concatenated subqueries.
-             -- -- CONCAT(e.number, ' ', (select value from enumeration_value where id = e.extent_type_id)) Extent,
-             CONCAT(
-               (select e.number from extent e where e.accession_id = acc.id order by e.id LIMIT 1),
-               ' ',
-               (select value from enumeration_value where id = (select e.extent_type_id from extent e where e.accession_id = acc.id order by e.id LIMIT 1))
-             ) Extent,
 
              ud.date_1 "Date Received",
              acc.accession_date "Accession Date",
@@ -161,7 +164,7 @@ function get_query($where_clause) {
              select ac.name from agent_family af join agent_contact ac on af.id = ac.agent_family_id WHERE lar.agent_family_id IS NOT NULL AND af.id = lar.agent_family_id
              UNION
              select ac.name from agent_corporate_entity acorp join agent_contact ac on acorp.id = ac.agent_corporate_entity_id WHERE lar.agent_corporate_entity_id IS NOT NULL AND acorp.id = lar.agent_corporate_entity_id
-             ) Name,
+             ) Source,
              ud.real_1 "Price",
              concat('https://aspace.lib.lsu.edu/accessions/', acc.id) "ArchivesSpace URL"
 
@@ -170,7 +173,7 @@ function get_query($where_clause) {
        -- accession id 10280 has two extent entries, so the inclusion of this join adds another record to the total.
        -- To ensure counts, the columns provided by this join will be constructed with subqueries in the select list.
        -- uncomment the following line if
-       -- left join extent e on e.accession_id = acc.id
+       left join extent e on e.accession_id = acc.id
        left join linked_agents_rlshp lar on lar.accession_id = acc.id
 
        left join (
@@ -183,7 +186,7 @@ function get_query($where_clause) {
          on bulk.accession_id = acc.id
 
 where $where_clause
-
+GROUP BY acc.identifier, acc.title, ud.string_2, acc.id, ud.date_1, ud.string_1, lar.agent_person_id, lar.agent_software_id, lar.agent_family_id, lar.agent_corporate_entity_id, ud.real_1
 ORDER BY ud.string_1
 
 EOQ;
