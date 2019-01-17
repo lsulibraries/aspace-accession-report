@@ -122,7 +122,8 @@ function get_query($where_clause) {
                select 
                  -- `expression` 
                  CASE
-                   when `expression` IS NULL then CONCAT(begin, ' - ', end)
+                   when `expression` IS NULL AND end IS NOT NULL then CONCAT(begin, ' - ', end)
+                   when `expression` IS NULL AND end IS NULL then begin
                    else `expression`
                  END
                from date 
@@ -151,11 +152,16 @@ function get_query($where_clause) {
              acc.content_description "Content Description",
              acc.general_note "General Note",
              ud.string_1 "Mss Number",
-             sources.Name Source,
-             sources.Address,
-             sources.City,
-             sources.Region,
-             sources.post_code 'Post Code',
+
+             (
+             select ac.name from agent_person ap join agent_contact ac on ap.id = ac.agent_person_id WHERE lar.agent_person_id IS NOT NULL AND ap.id = lar.agent_person_id
+             UNION
+             select ac.name from agent_software asw join agent_contact ac on asw.id = ac.agent_software_id WHERE lar.agent_software_id IS NOT NULL AND asw.id = lar.agent_person_id
+             UNION
+             select ac.name from agent_family af join agent_contact ac on af.id = ac.agent_family_id WHERE lar.agent_family_id IS NOT NULL AND af.id = lar.agent_family_id
+             UNION
+             select ac.name from agent_corporate_entity acorp join agent_contact ac on acorp.id = ac.agent_corporate_entity_id WHERE lar.agent_corporate_entity_id IS NOT NULL AND acorp.id = lar.agent_corporate_entity_id
+             ) Name,
              ud.real_1 "Price",
              concat('https://aspace.lib.lsu.edu/accessions/', acc.id) "ArchivesSpace URL"
 
@@ -165,7 +171,7 @@ function get_query($where_clause) {
        -- To ensure counts, the columns provided by this join will be constructed with subqueries in the select list.
        -- uncomment the following line if
        -- left join extent e on e.accession_id = acc.id
-
+       left join linked_agents_rlshp lar on lar.accession_id = acc.id
 
        left join (
          select *
@@ -175,24 +181,6 @@ function get_query($where_clause) {
            from enumeration_value
            where id=d.date_type_id) = "bulk") bulk
          on bulk.accession_id = acc.id
-
-       left join (select
-         a.id,
-         l.agent_person_id,
-         n.sort_name Name,
-         ac.address_1 Address,
-         ac.city City,
-         ac.region Region,
-         ac.post_code,
-         l.role_id,
-         (select value from enumeration_value where id=l.role_id) role,
-         a.title,
-         a.identifier
-       from accession a
-         join linked_agents_rlshp l on a.id = l.accession_id
-         join name_person n on n.agent_person_id = l.agent_person_id
-         left join agent_contact ac on ac.agent_person_id = l.agent_person_id
-       where l.role_id = 881) sources ON sources.id = acc.id
 
 where $where_clause
 
