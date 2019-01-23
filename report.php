@@ -169,7 +169,7 @@ function get_query($where_clause) {
        -- To ensure counts, the columns provided by this join will be constructed with subqueries in the select list.
        -- uncomment the following line if
        left join extent e on e.accession_id = acc.id
-       left join linked_agents_rlshp lar on lar.accession_id = acc.id
+       left join linked_agents_rlshp lar on lar.accession_id = acc.id and lar.role_id = 881
 
        left join (
          select *
@@ -181,7 +181,18 @@ function get_query($where_clause) {
          on bulk.accession_id = acc.id
        left join
          (
-         select l.id, ac.name, ac.address_1, ac.city, ac.region, ac.post_code from agent_person ap join agent_contact ac on ap.id = ac.agent_person_id join linked_agents_rlshp l on l.agent_person_id = ap.id WHERE l.agent_person_id IS NOT NULL and l.role_id = 881
+           select
+              l.id,
+              ac.name,
+              ac.address_1,
+              ac.city,
+              ac.region,
+              ac.post_code
+            from
+              agent_person ap
+              join agent_contact ac on ap.id = ac.agent_person_id
+              join linked_agents_rlshp l on l.agent_person_id = ap.id
+            WHERE l.agent_person_id IS NOT NULL and l.role_id = 881
          UNION
          select l.id, ac.name, ac.address_1, ac.city, ac.region, ac.post_code from agent_software asw join agent_contact ac on asw.id = ac.agent_software_id join linked_agents_rlshp l on l.agent_software_id = asw.id WHERE l.agent_software_id IS NOT NULL and l.role_id = 881
          UNION
