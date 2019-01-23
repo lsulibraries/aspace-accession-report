@@ -119,15 +119,15 @@ function get_query($where_clause) {
              acc.title "Collection Title",
              ud.string_2 "Location",
              (
-               select 
-                 -- `expression` 
+               select
+                 -- `expression`
                  CASE
                    when `expression` IS NULL AND end IS NOT NULL then CONCAT(begin, ' - ', end)
                    when `expression` IS NULL AND end IS NULL then begin
                    else `expression`
                  END
-               from date 
-               where accession_id = acc.id 
+               from date
+               where accession_id = acc.id
                LIMIT 1
              ) "Collection Dates",
 
@@ -155,16 +155,11 @@ function get_query($where_clause) {
              acc.content_description "Content Description",
              acc.general_note "General Note",
              ud.string_1 "Mss Number",
-
-             (
-             select ac.name from agent_person ap join agent_contact ac on ap.id = ac.agent_person_id WHERE lar.agent_person_id IS NOT NULL AND ap.id = lar.agent_person_id
-             UNION
-             select ac.name from agent_software asw join agent_contact ac on asw.id = ac.agent_software_id WHERE lar.agent_software_id IS NOT NULL AND asw.id = lar.agent_person_id
-             UNION
-             select ac.name from agent_family af join agent_contact ac on af.id = ac.agent_family_id WHERE lar.agent_family_id IS NOT NULL AND af.id = lar.agent_family_id
-             UNION
-             select ac.name from agent_corporate_entity acorp join agent_contact ac on acorp.id = ac.agent_corporate_entity_id WHERE lar.agent_corporate_entity_id IS NOT NULL AND acorp.id = lar.agent_corporate_entity_id
-             ) Source,
+             source.name,
+             source.address_1,
+             source.city,
+             source.region,
+             source.post_code,
              ud.real_1 "Price",
              concat('https://aspace.lib.lsu.edu/accessions/', acc.id) "ArchivesSpace URL"
 
@@ -184,9 +179,20 @@ function get_query($where_clause) {
            from enumeration_value
            where id=d.date_type_id) = "bulk") bulk
          on bulk.accession_id = acc.id
+       left join
+         (
+         select l.id, ac.name, ac.address_1, ac.city, ac.region, ac.post_code from agent_person ap join agent_contact ac on ap.id = ac.agent_person_id join linked_agents_rlshp l on l.agent_person_id = ap.id WHERE l.agent_person_id IS NOT NULL and l.role_id = 881
+         UNION
+         select l.id, ac.name, ac.address_1, ac.city, ac.region, ac.post_code from agent_software asw join agent_contact ac on asw.id = ac.agent_software_id join linked_agents_rlshp l on l.agent_software_id = asw.id WHERE l.agent_software_id IS NOT NULL and l.role_id = 881
+         UNION
+         select l.id, ac.name, ac.address_1, ac.city, ac.region, ac.post_code from agent_family af join agent_contact ac on af.id = ac.agent_family_id join linked_agents_rlshp l on af.id = l.agent_family_id WHERE l.agent_family_id IS NOT NULL and l.role_id = 881
+         UNION
+         select l.id, ac.name, ac.address_1, ac.city, ac.region, ac.post_code from agent_corporate_entity acorp join agent_contact ac on acorp.id = ac.agent_corporate_entity_id join linked_agents_rlshp l on acorp.id = l.agent_corporate_entity_id WHERE l.agent_corporate_entity_id IS NOT NULL and l.role_id = 881
+       ) source on source.id = lar.id
 
 where $where_clause
-GROUP BY acc.identifier, acc.title, ud.string_2, acc.id, ud.date_1, ud.string_1, lar.agent_person_id, lar.agent_software_id, lar.agent_family_id, lar.agent_corporate_entity_id, ud.real_1
+GROUP BY acc.identifier, acc.title, ud.string_2, acc.id, ud.date_1, ud.string_1, lar.agent_person_id, lar.agent_software_id, lar.agent_family_id, lar.agent_corporate_entity_id, ud.real_1, source.name, source.address_1, source.city, source.region, source.post_code
+
 ORDER BY ud.string_1
 
 EOQ;
